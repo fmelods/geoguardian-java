@@ -71,7 +71,7 @@ O projeto segue uma arquitetura em camadas:
 ### Clonando o Repositório
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/fmelods/geoguardian-java
 cd geoguardian-api
 ```
 
@@ -252,17 +252,11 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
 
-## 📄 Licença
-
-Este projeto está sob a licença Apache 2.0. Veja o arquivo `LICENSE` para mais detalhes.
-
 ## 👥 Equipe
 
-Desenvolvido para o projeto GeoGuardian - Sistema de Monitoramento de Desastres Naturais.
-
-## 📞 Suporte
-
-Para dúvidas ou suporte, entre em contato através dos issues do GitHub ou email: suporte@geoguardian.com
+- Cauã Marcelo Da Silva Machado – RM558024
+- Felipe Melo de Sousa – RM556099
+- Gabriel Lima Silva – RM556773
 
 ---
 
