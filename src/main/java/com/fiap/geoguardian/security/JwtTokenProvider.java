@@ -12,24 +12,21 @@ import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
-
+    
     @Value("${jwt.secret}")
     private String jwtSecret;
-
+    
     @Value("${jwt.expiration}")
     private int jwtExpirationInMs;
-
+    
     private SecretKey getSigningKey() {
-        if (jwtSecret.length() < 32) {
-            return Keys.secretKeyFor(SignatureAlgorithm.HS256);
-        }
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
-
+    
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationInMs);
-
+        
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
                 .setIssuedAt(new Date())
@@ -37,23 +34,23 @@ public class JwtTokenProvider {
                 .signWith(getSigningKey())
                 .compact();
     }
-
+    
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-
+        
         return claims.getSubject();
     }
-
+    
     public boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())  // Usamos a chave segura
-                    .build()
-                    .parseClaimsJws(authToken);
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(authToken);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
