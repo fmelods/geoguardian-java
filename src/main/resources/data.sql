@@ -27,10 +27,22 @@ INSERT INTO TB_TIPO_USUARIO (DESCRICAO) VALUES ('Cidadão');
 
 -- Usuários (senha: 123456)
 INSERT INTO TB_USUARIO (NOME, EMAIL, SENHA, DATA_CADASTRO, ID_TIPO_USUARIO)
-VALUES ('Admin Sistema', 'admin@geoguardian.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9P2.nRs.b7nR4Rq', CURRENT_TIMESTAMP, 1);
+VALUES (
+  'Admin Sistema',
+  'admin@geoguardian.com',
+  '$2a$10$Qp6F3XlNse7o8a9MnTsPmuFXAx3PWbytvFQ8yzGCdt.PU6LRRf26.',
+  CURRENT_TIMESTAMP,
+  1
+);
 
 INSERT INTO TB_USUARIO (NOME, EMAIL, SENHA, DATA_CADASTRO, ID_TIPO_USUARIO)
-VALUES ('João Silva', 'joao@email.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9P2.nRs.b7nR4Rq', CURRENT_TIMESTAMP, 3);
+VALUES (
+  'João Silva',
+  'joao@email.com',
+  '$2a$10$Qp6F3XlNse7o8a9MnTsPmuFXAx3PWbytvFQ8yzGCdt.PU6LRRf26.',
+  CURRENT_TIMESTAMP,
+  3
+);
 
 -- Tipos de Área
 INSERT INTO TB_TIPO_AREA (DESCRICAO) VALUES ('Barragem');

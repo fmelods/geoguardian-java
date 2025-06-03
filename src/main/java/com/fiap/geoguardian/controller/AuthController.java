@@ -17,29 +17,25 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @Tag(name = "Autenticação", description = "Operações de autenticação")
 public class AuthController {
-    
+
     @Autowired
     private AuthenticationManager authenticationManager;
-    
+
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
-    
+
     @PostMapping("/login")
     @Operation(summary = "Fazer login", description = "Autentica um usuário e retorna um token JWT")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(),
-                    loginRequest.getSenha()
+                        loginRequest.getEmail(),
+                        loginRequest.getSenha()
                 )
-            );
-            
-            String token = jwtTokenProvider.generateToken(authentication);
-            
-            return ResponseEntity.ok(new LoginResponse(token, "Bearer"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        );
+
+        String token = jwtTokenProvider.generateToken(authentication);
+
+        return ResponseEntity.ok(new LoginResponse(token, "Bearer"));
     }
 }
