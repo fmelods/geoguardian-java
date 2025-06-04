@@ -1,6 +1,5 @@
 package com.fiap.geoguardian.config;
 
-import com.fiap.geoguardian.security.CustomUserDetailsService;
 import com.fiap.geoguardian.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,9 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Autowired
-    private CustomUserDetailsService userDetailsService;
-
-    @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -44,18 +40,17 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
-                                "/",                                 // Libera acesso à raiz
-                                "/api/auth/**",                      // Libera endpoints de autenticação
-                                "/swagger-ui/**",                    // Libera Swagger moderno
-                                "/swagger-ui.html",                  // Libera Swagger tradicional
-                                "/api-docs/**",                      // Libera docs OpenAPI
-                                "/h2-console/**"                     // Libera console do H2
+                                "/",
+                                "/api/auth/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/h2-console/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Permite uso de frames (necessário para o H2)
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
