@@ -6,13 +6,14 @@ import com.fiap.geoguardian.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -23,14 +24,14 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping
-    @Operation(summary = "Listar todos os usuários", description = "Retorna uma lista paginada de usuários")
-    public Page<Usuario> listarTodos(
+    @Operation(summary = "Listar todos os usuários", description = "Retorna uma lista de usuários")
+    public List<Usuario> listarTodos(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sort) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-        return usuarioService.findAll(pageable);
+        return usuarioService.findAll(pageable).getContent();
     }
 
     @GetMapping("/{id}")
