@@ -2,13 +2,11 @@ package com.fiap.geoguardian.controller;
 
 import com.fiap.geoguardian.dto.AlertaRequestDTO;
 import com.fiap.geoguardian.dto.AlertaResponseDTO;
-import com.fiap.geoguardian.model.Alerta;
 import com.fiap.geoguardian.service.AlertaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,8 +28,8 @@ public class AlertaController {
     private AlertaService alertaService;
 
     @GetMapping
-    @Operation(summary = "Listar todos os alertas", description = "Retorna uma lista paginada de alertas")
-    public ResponseEntity<Page<AlertaResponseDTO>> findAll(
+    @Operation(summary = "Listar todos os alertas", description = "Retorna uma lista de alertas")
+    public ResponseEntity<List<AlertaResponseDTO>> findAll(
             @RequestParam(required = false) Integer nivelRisco,
             @RequestParam(required = false) Long tipoAlertaId,
             @RequestParam(required = false) Long areaRiscoId,
@@ -42,17 +41,17 @@ public class AlertaController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
 
-        Page<AlertaResponseDTO> alertas;
+        List<AlertaResponseDTO> alertas;
         if (inicio != null && fim != null) {
-            alertas = alertaService.findByDataHoraBetweenDTO(inicio, fim, pageable);
+            alertas = alertaService.findByDataHoraBetweenDTO(inicio, fim, pageable).getContent();
         } else if (nivelRisco != null) {
-            alertas = alertaService.findByNivelRiscoDTO(nivelRisco, pageable);
+            alertas = alertaService.findByNivelRiscoDTO(nivelRisco, pageable).getContent();
         } else if (tipoAlertaId != null) {
-            alertas = alertaService.findByTipoAlertaIdDTO(tipoAlertaId, pageable);
+            alertas = alertaService.findByTipoAlertaIdDTO(tipoAlertaId, pageable).getContent();
         } else if (areaRiscoId != null) {
-            alertas = alertaService.findByAreaRiscoIdDTO(areaRiscoId, pageable);
+            alertas = alertaService.findByAreaRiscoIdDTO(areaRiscoId, pageable).getContent();
         } else {
-            alertas = alertaService.findAllDTO(pageable);
+            alertas = alertaService.findAllDTO(pageable).getContent();
         }
 
         return ResponseEntity.ok(alertas);

@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -26,8 +26,8 @@ public class SensorController {
     private SensorService sensorService;
 
     @GetMapping
-    @Operation(summary = "Listar todos os sensores", description = "Retorna uma lista paginada de sensores")
-    public ResponseEntity<Page<SensorResponseDTO>> findAll(
+    @Operation(summary = "Listar todos os sensores", description = "Retorna uma lista de sensores")
+    public ResponseEntity<List<SensorResponseDTO>> findAll(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long areaRiscoId,
             @RequestParam(required = false) Long modeloSensorId,
@@ -37,15 +37,15 @@ public class SensorController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
 
-        Page<SensorResponseDTO> sensores;
+        List<SensorResponseDTO> sensores;
         if (status != null) {
-            sensores = sensorService.findByStatusDTO(status, pageable);
+            sensores = sensorService.findByStatusDTO(status, pageable).getContent();
         } else if (areaRiscoId != null) {
-            sensores = sensorService.findByAreaRiscoIdDTO(areaRiscoId, pageable);
+            sensores = sensorService.findByAreaRiscoIdDTO(areaRiscoId, pageable).getContent();
         } else if (modeloSensorId != null) {
-            sensores = sensorService.findByModeloSensorIdDTO(modeloSensorId, pageable);
+            sensores = sensorService.findByModeloSensorIdDTO(modeloSensorId, pageable).getContent();
         } else {
-            sensores = sensorService.findAllDTO(pageable);
+            sensores = sensorService.findAllDTO(pageable).getContent();
         }
 
         return ResponseEntity.ok(sensores);

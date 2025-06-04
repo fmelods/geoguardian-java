@@ -1,13 +1,13 @@
 package com.fiap.geoguardian.controller;
 
 import com.fiap.geoguardian.dto.PaisRequestDTO;
+import com.fiap.geoguardian.dto.PaisResponseDTO;
 import com.fiap.geoguardian.model.Pais;
 import com.fiap.geoguardian.service.PaisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,7 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/paises")
@@ -26,8 +28,8 @@ public class PaisController {
     private PaisService paisService;
 
     @GetMapping
-    @Operation(summary = "Listar todos os países", description = "Retorna uma lista paginada de países")
-    public ResponseEntity<Page<Pais>> findAll(
+    @Operation(summary = "Listar todos os países", description = "Retorna uma lista de países")
+    public ResponseEntity<List<PaisResponseDTO>> findAll(
             @RequestParam(required = false) String nome,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -35,11 +37,19 @@ public class PaisController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
 
-        Page<Pais> paises;
+        List<PaisResponseDTO> paises;
         if (nome != null) {
-            paises = paisService.findByNomeContaining(nome, pageable);
+            paises = paisService.findByNomeContaining(nome, pageable)
+                    .getContent()
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
         } else {
-            paises = paisService.findAll(pageable);
+            paises = paisService.findAll(pageable)
+                    .getContent()
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
         }
 
         return ResponseEntity.ok(paises);
@@ -47,20 +57,20 @@ public class PaisController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar país por ID", description = "Retorna um país específico pelo ID")
-    public ResponseEntity<Pais> findById(@PathVariable Long id) {
+    public ResponseEntity<PaisResponseDTO> findById(@PathVariable Long id) {
         Optional<Pais> pais = paisService.findById(id);
-        return pais.map(ResponseEntity::ok)
+        return pais.map(p -> ResponseEntity.ok(convertToDTO(p)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Criar novo país", description = "Cria um novo país")
-    public ResponseEntity<Pais> create(@Valid @RequestBody PaisRequestDTO paisRequest) {
+    public ResponseEntity<PaisResponseDTO> create(@Valid @RequestBody PaisRequestDTO paisRequest) {
         try {
             Pais pais = new Pais();
             pais.setNome(paisRequest.getNome());
             Pais savedPais = paisService.save(pais);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedPais);
+            return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(savedPais));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -68,10 +78,10 @@ public class PaisController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar país", description = "Atualiza um país existente")
-    public ResponseEntity<Pais> update(@PathVariable Long id, @Valid @RequestBody PaisRequestDTO paisRequest) {
+    public ResponseEntity<PaisResponseDTO> update(@PathVariable Long id, @Valid @RequestBody PaisRequestDTO paisRequest) {
         try {
             Pais updatedPais = paisService.update(id, paisRequest.getNome());
-            return ResponseEntity.ok(updatedPais);
+            return ResponseEntity.ok(convertToDTO(updatedPais));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -86,5 +96,9 @@ public class PaisController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private PaisResponseDTO convertToDTO(Pais pais) {
+        return new PaisResponseDTO(pais.getId(), pais.getNome());
     }
 }

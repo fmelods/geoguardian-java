@@ -1,7 +1,6 @@
 package com.fiap.geoguardian.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,11 +24,11 @@ public class Logradouro {
     @NotNull(message = "Bairro é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_BAIRRO", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Bairro bairro;
 
     @OneToMany(mappedBy = "logradouro", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonIgnore
     private List<AreaRisco> areasRisco;
 
     public Logradouro() {}
