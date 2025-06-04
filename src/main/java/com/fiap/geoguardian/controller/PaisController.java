@@ -1,5 +1,6 @@
 package com.fiap.geoguardian.controller;
 
+import com.fiap.geoguardian.dto.PaisRequestDTO;
 import com.fiap.geoguardian.model.Pais;
 import com.fiap.geoguardian.service.PaisService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,13 +8,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
 import java.util.Optional;
 
@@ -31,13 +31,13 @@ public class PaisController {
             @RequestParam(required = false) String nome,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sort) {
+            @RequestParam(defaultValue = "nome") String sort) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
 
         Page<Pais> paises;
-        if (nome != null && !nome.trim().isEmpty()) {
-            paises = paisService.findByNome(nome, pageable);
+        if (nome != null) {
+            paises = paisService.findByNomeContaining(nome, pageable);
         } else {
             paises = paisService.findAll(pageable);
         }
@@ -55,8 +55,10 @@ public class PaisController {
 
     @PostMapping
     @Operation(summary = "Criar novo país", description = "Cria um novo país")
-    public ResponseEntity<Pais> create(@Valid @RequestBody Pais pais) {
+    public ResponseEntity<Pais> create(@Valid @RequestBody PaisRequestDTO paisRequest) {
         try {
+            Pais pais = new Pais();
+            pais.setNome(paisRequest.getNome());
             Pais savedPais = paisService.save(pais);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedPais);
         } catch (RuntimeException e) {
@@ -66,9 +68,9 @@ public class PaisController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar país", description = "Atualiza um país existente")
-    public ResponseEntity<Pais> update(@PathVariable Long id, @Valid @RequestBody Pais pais) {
+    public ResponseEntity<Pais> update(@PathVariable Long id, @Valid @RequestBody PaisRequestDTO paisRequest) {
         try {
-            Pais updatedPais = paisService.update(id, pais);
+            Pais updatedPais = paisService.update(id, paisRequest.getNome());
             return ResponseEntity.ok(updatedPais);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

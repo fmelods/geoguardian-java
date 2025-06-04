@@ -1,5 +1,7 @@
 package com.fiap.geoguardian.controller;
 
+import com.fiap.geoguardian.dto.AlertaRequestDTO;
+import com.fiap.geoguardian.dto.AlertaResponseDTO;
 import com.fiap.geoguardian.model.Alerta;
 import com.fiap.geoguardian.service.AlertaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,14 +9,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class AlertaController {
 
     @GetMapping
     @Operation(summary = "Listar todos os alertas", description = "Retorna uma lista paginada de alertas")
-    public ResponseEntity<Page<Alerta>> findAll(
+    public ResponseEntity<Page<AlertaResponseDTO>> findAll(
             @RequestParam(required = false) Integer nivelRisco,
             @RequestParam(required = false) Long tipoAlertaId,
             @RequestParam(required = false) Long areaRiscoId,
@@ -41,17 +42,17 @@ public class AlertaController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
 
-        Page<Alerta> alertas;
+        Page<AlertaResponseDTO> alertas;
         if (inicio != null && fim != null) {
-            alertas = alertaService.findByDataHoraBetween(inicio, fim, pageable);
+            alertas = alertaService.findByDataHoraBetweenDTO(inicio, fim, pageable);
         } else if (nivelRisco != null) {
-            alertas = alertaService.findByNivelRisco(nivelRisco, pageable);
+            alertas = alertaService.findByNivelRiscoDTO(nivelRisco, pageable);
         } else if (tipoAlertaId != null) {
-            alertas = alertaService.findByTipoAlertaId(tipoAlertaId, pageable);
+            alertas = alertaService.findByTipoAlertaIdDTO(tipoAlertaId, pageable);
         } else if (areaRiscoId != null) {
-            alertas = alertaService.findByAreaRiscoId(areaRiscoId, pageable);
+            alertas = alertaService.findByAreaRiscoIdDTO(areaRiscoId, pageable);
         } else {
-            alertas = alertaService.findAll(pageable);
+            alertas = alertaService.findAllDTO(pageable);
         }
 
         return ResponseEntity.ok(alertas);
@@ -59,17 +60,17 @@ public class AlertaController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar alerta por ID", description = "Retorna um alerta específico pelo ID")
-    public ResponseEntity<Alerta> findById(@PathVariable Long id) {
-        Optional<Alerta> alerta = alertaService.findById(id);
+    public ResponseEntity<AlertaResponseDTO> findById(@PathVariable Long id) {
+        Optional<AlertaResponseDTO> alerta = alertaService.findByIdDTO(id);
         return alerta.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Criar novo alerta", description = "Cria um novo alerta")
-    public ResponseEntity<Alerta> create(@Valid @RequestBody Alerta alerta) {
+    public ResponseEntity<AlertaResponseDTO> create(@Valid @RequestBody AlertaRequestDTO alertaRequest) {
         try {
-            Alerta savedAlerta = alertaService.save(alerta);
+            AlertaResponseDTO savedAlerta = alertaService.saveDTO(alertaRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedAlerta);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -78,9 +79,9 @@ public class AlertaController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar alerta", description = "Atualiza um alerta existente")
-    public ResponseEntity<Alerta> update(@PathVariable Long id, @Valid @RequestBody Alerta alerta) {
+    public ResponseEntity<AlertaResponseDTO> update(@PathVariable Long id, @Valid @RequestBody AlertaRequestDTO alertaRequest) {
         try {
-            Alerta updatedAlerta = alertaService.update(id, alerta);
+            AlertaResponseDTO updatedAlerta = alertaService.updateDTO(id, alertaRequest);
             return ResponseEntity.ok(updatedAlerta);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

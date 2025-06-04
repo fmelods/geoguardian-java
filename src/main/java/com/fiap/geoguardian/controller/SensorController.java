@@ -1,14 +1,16 @@
 package com.fiap.geoguardian.controller;
 
-import com.fiap.geoguardian.model.Sensor;
+import com.fiap.geoguardian.dto.SensorRequestDTO;
+import com.fiap.geoguardian.dto.SensorResponseDTO;
 import com.fiap.geoguardian.service.SensorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,70 +21,74 @@ import java.util.Optional;
 @RequestMapping("/api/sensores")
 @Tag(name = "Sensores", description = "Operações relacionadas aos sensores")
 public class SensorController {
-    
+
     @Autowired
     private SensorService sensorService;
-    
+
     @GetMapping
     @Operation(summary = "Listar todos os sensores", description = "Retorna uma lista paginada de sensores")
-    public ResponseEntity<Page<Sensor>> findAll(
+    public ResponseEntity<Page<SensorResponseDTO>> findAll(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long areaRiscoId,
             @RequestParam(required = false) Long modeloSensorId,
-            @PageableDefault(size = 20) Pageable pageable) {
-        
-        Page<Sensor> sensores;
-        if (status != null && !status.trim().isEmpty()) {
-            sensores = sensorService.findByStatus(status, pageable);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sort) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+
+        Page<SensorResponseDTO> sensores;
+        if (status != null) {
+            sensores = sensorService.findByStatusDTO(status, pageable);
         } else if (areaRiscoId != null) {
-            sensores = sensorService.findByAreaRiscoId(areaRiscoId, pageable);
+            sensores = sensorService.findByAreaRiscoIdDTO(areaRiscoId, pageable);
         } else if (modeloSensorId != null) {
-            sensores = sensorService.findByModeloSensorId(modeloSensorId, pageable);
+            sensores = sensorService.findByModeloSensorIdDTO(modeloSensorId, pageable);
         } else {
-            sensores = sensorService.findAll(pageable);
+            sensores = sensorService.findAllDTO(pageable);
         }
-        
+
         return ResponseEntity.ok(sensores);
     }
-    
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar sensor por ID", description = "Retorna um sensor específico pelo ID")
-    public ResponseEntity<Sensor> findById(@PathVariable Long id) {
-        Optional<Sensor> sensor = sensorService.findById(id);
+    public ResponseEntity<SensorResponseDTO> findById(@PathVariable Long id) {
+        Optional<SensorResponseDTO> sensor = sensorService.findByIdDTO(id);
         return sensor.map(ResponseEntity::ok)
-                     .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @GetMapping("/uuid/{uuid}")
     @Operation(summary = "Buscar sensor por UUID", description = "Retorna um sensor específico pelo UUID")
-    public ResponseEntity<Sensor> findByUuid(@PathVariable String uuid) {
-        Optional<Sensor> sensor = sensorService.findByUuid(uuid);
+    public ResponseEntity<SensorResponseDTO> findByUuid(@PathVariable String uuid) {
+        Optional<SensorResponseDTO> sensor = sensorService.findByUuidDTO(uuid);
         return sensor.map(ResponseEntity::ok)
-                     .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @PostMapping
     @Operation(summary = "Criar novo sensor", description = "Cria um novo sensor")
-    public ResponseEntity<Sensor> create(@Valid @RequestBody Sensor sensor) {
+    public ResponseEntity<SensorResponseDTO> create(@Valid @RequestBody SensorRequestDTO sensorRequest) {
         try {
-            Sensor savedSensor = sensorService.save(sensor);
+            SensorResponseDTO savedSensor = sensorService.saveDTO(sensorRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedSensor);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar sensor", description = "Atualiza um sensor existente")
-    public ResponseEntity<Sensor> update(@PathVariable Long id, @Valid @RequestBody Sensor sensor) {
+    public ResponseEntity<SensorResponseDTO> update(@PathVariable Long id, @Valid @RequestBody SensorRequestDTO sensorRequest) {
         try {
-            Sensor updatedSensor = sensorService.update(id, sensor);
+            SensorResponseDTO updatedSensor = sensorService.updateDTO(id, sensorRequest);
             return ResponseEntity.ok(updatedSensor);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar sensor", description = "Remove um sensor")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
